@@ -1,5 +1,13 @@
-import '@/styles/globals.css'
+import React from 'react';
+import MovieContextProvider from '../src/MovieContext';
+import '../styles/globals.css'
 
-export default function App({ Component, pageProps }) {
-  return <Component {...pageProps} />
-}
+const MyApp = ({ Component, pageProps }) => {
+  return (
+    <MovieContextProvider>
+      <Component {...pageProps} />
+    </MovieContextProvider>
+  );
+};
+
+export default MyApp;
