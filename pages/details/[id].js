@@ -3,14 +3,16 @@
 import React, { useContext, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { MovieContext } from '../../src/MovieContext';
-import { AiFillStar } from 'react-icons/ai';
+import { AiFillStar, AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 import Header from '../header';
 import Navigation from '@/src/Navigation';
+import { AiFillLike } from "react-icons/ai";
+import { Empty, Tooltip } from 'antd';
 
 const MovieDetailsScreen = () => {
     const router = useRouter();
     const { id } = router.query;
-    const { setSelectedMovie, movies, selectedMovie, addToWatchlist, watchlist } = useContext(MovieContext);
+    const { setSelectedMovie, movies, selectedMovie, addToWatchlist, isMovieInWatchlist, watchlist } = useContext(MovieContext);
 
     useEffect(() => {
         const selectedMovie = movies.find((movie) => movie.id.toString() === id) || watchlist.find((movie) => movie.id.toString() === id);
@@ -18,13 +20,12 @@ const MovieDetailsScreen = () => {
     }, [id, movies]);
 
     if (!selectedMovie) {
-        return <div>Loading...</div>;
+        return <Empty className='watchlist_error' />
     }
 
     const backgroundImageStyle = {
         backgroundImage: `linear-gradient( to right bottom,  rgba(13, 3, 3, 0.436), rgba(21, 2, 2, 0.429) ), url(https://image.tmdb.org/t/p/w300${selectedMovie.backdrop_path})`,
         backgroundSize: 'cover',
-        // backgroundPosition: 'contain',
         backgroundAttachment: 'fixed',
         width: '100%',
         height: '100%',
@@ -36,14 +37,15 @@ const MovieDetailsScreen = () => {
         color: 'White',
         fontSize: '25px',
     };
+
     let Image = `https://image.tmdb.org/t/p/w300${selectedMovie.poster_path}`
 
     if (selectedMovie.backdrop_path == null) {
         backgroundImageStyle.backgroundImage = `url(/error-404-12.png)`;
     }
+
     if (selectedMovie.poster_path == null) {
         Image = '/found.png'
-
     }
 
     return (
@@ -70,7 +72,24 @@ const MovieDetailsScreen = () => {
                     <p>Genres : {selectedMovie?.genre_ids.map(genre => (
                         <span key={genre}>{genre} </span>
                     ))}</p>
-                    <button className='add_to_watchlist_btn' onClick={() => addToWatchlist(selectedMovie)}>Add to Watchlist</button>
+                    <p className='icon'><AiFillLike color='rgb(64, 252, 64)' size={25} />
+                        {selectedMovie.vote_count}
+                    </p>
+                    <div
+                        className='add_to_watchlist_btn_id'
+                        onClick={() => addToWatchlist(selectedMovie)}
+                    >
+                        {isMovieInWatchlist(selectedMovie.id) ?
+
+                            <Tooltip title='RemoveFromWatchlist' placement='bottom'>
+                                <AiFillHeart color='red' size={35} />
+                            </Tooltip>
+                            :
+                            <Tooltip title='AddToWatchlist' placement='bottom'>
+                                <AiOutlineHeart size={35} color='white' />
+                            </Tooltip>
+                        }
+                    </div>
                 </div>
             </div>
             {selectedMovie.overview && <div className='about_movie'>

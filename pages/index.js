@@ -2,7 +2,7 @@ import React from 'react';
 import Navigation from '@/src/Navigation';
 import WatchlistScreen from './watchlist';
 import Header from './header';
-import Carousel from './movieCarousel';
+import MovieCarousel from './movieCarousel';
 
 const SearchScreen = () => {
 
@@ -13,7 +13,7 @@ const SearchScreen = () => {
         <Navigation />
       </div>
       <div className="carousel-container">
-        <Carousel />
+        <MovieCarousel />
       </div>
       <div className='content_area'>
         <WatchlistScreen />

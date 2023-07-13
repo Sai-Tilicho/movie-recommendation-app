@@ -1,3 +1,4 @@
+/* eslint-disable react/display-name */
 import React, { createContext, useState, useEffect } from 'react';
 
 export const MovieContext = createContext();
@@ -7,6 +8,7 @@ const MovieContextProvider = (props) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedMovie, setSelectedMovie] = useState(null);
     const [watchlist, setWatchlist] = useState([]);
+    const [watchlistCount, setWatchlistCount] = useState(0);
 
     const apiKey = '9dfe622f97c35a9030377f8ba2951453';
 
@@ -15,30 +17,44 @@ const MovieContextProvider = (props) => {
 
         const storedWatchlist = localStorage.getItem('watchlist');
         if (storedWatchlist) {
-            setWatchlist(JSON.parse(storedWatchlist));
+            const parsedWatchlist = JSON.parse(storedWatchlist);
+            setWatchlist(parsedWatchlist);
+            setWatchlistCount(parsedWatchlist.length);
         }
     }, []);
 
-
-
     const fetchMovies = (query) => {
-        // Fetch movies based on query from the movie database API
         fetch(`https://api.themoviedb.org/3/movie/${query}?api_key=${apiKey}`)
-            .then((response) => response.json())
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Error fetching movies.');
+            })
             .then((data) => {
                 setMovies(data.results);
             })
-            .catch((error) => console.log(error));
+            .catch((error) => {
+                console.log(error);
+                setMovies([]);
+            });
     };
 
     const searchMovies = () => {
-        // Fetch movies based on search query from the movie database API
         fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${searchQuery}`)
-            .then((response) => response.json())
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Error searching movies.');
+            })
             .then((data) => {
                 setMovies(data.results);
             })
-            .catch((error) => console.log(error));
+            .catch((error) => {
+                console.log(error);
+                setMovies([]);
+            });
     };
 
     const addToWatchlist = (movie) => {
@@ -46,10 +62,12 @@ const MovieContextProvider = (props) => {
         if (!isMovieInWatchlist) {
             const updatedWatchlist = [...watchlist, movie];
             setWatchlist(updatedWatchlist);
+            setWatchlistCount(watchlistCount + 1);
             localStorage.setItem('watchlist', JSON.stringify(updatedWatchlist));
         } else {
             const updatedWatchlist = watchlist.filter((m) => m.id !== movie.id);
             setWatchlist(updatedWatchlist);
+            setWatchlistCount(watchlistCount - 1);
             localStorage.setItem('watchlist', JSON.stringify(updatedWatchlist));
         }
     };
@@ -58,18 +76,6 @@ const MovieContextProvider = (props) => {
         return watchlist.some((movie) => movie.id === movieId);
     };
 
-
-    // const addToWatchlist = (movie) => {
-    //     const isMovieInWatchlist = watchlist.find((m) => m.id === movie.id);
-    //     if (!isMovieInWatchlist) {
-    //         setWatchlist([...watchlist, movie]);
-    //     }
-    // };
-
-    // const removeFromWatchlist = (movieId) => {
-    //     setWatchlist(watchlist.filter((movie) => movie.id !== movieId));
-    // };
-
     return (
         <MovieContext.Provider
             value={{
@@ -77,6 +83,7 @@ const MovieContextProvider = (props) => {
                 searchQuery,
                 selectedMovie,
                 watchlist,
+                watchlistCount,
                 setSearchQuery,
                 setSelectedMovie,
                 fetchMovies,
